@@ -1,4 +1,4 @@
-# Instrucciones para instalas los paquetes necesarios #
+# Instrucciones para instalar los paquetes necesarios #
 
 La idea es usar conda. Se puede descargar desde https://www.anaconda.com/ y tiene soporte para diferentes sistemas operativos. En esta guia lo vamos a usar desde la consola.
 
