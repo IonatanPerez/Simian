@@ -1,3 +1,7 @@
 {
+<<<<<<< HEAD
     "python.pythonPath": "C:\\Users\\Ioni\\.conda\\envs\\Simian\\python.exe"
+=======
+    "python.pythonPath": "/home/ionatan/anaconda3/envs/Simian/bin/python"
+>>>>>>> 3cd3a80ee810438ad8bd249a715e277042eb0604
 }
