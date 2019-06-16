@@ -23,4 +23,4 @@ Para volver a acceder a la consola donde esta corriendo el codigo debemos ejecut
 
 ## Recuperar archivos ##
 
-
+Podemos usar WinSCP que permite copiar en forma facil archivos de servidores mediante ssh

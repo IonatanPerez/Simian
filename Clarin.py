@@ -34,7 +34,7 @@ class Clarin:
         info = {}
         info["timestampofsearch"] = datetime.datetime.now().timestamp()
         info["timeofsearch"] = datetime.datetime.fromtimestamp(info["timestampofsearch"]).isoformat()
-        info["filename"] = self.savefolder + self.rawdata + datetime.datetime.fromtimestamp(info["timestampofsearch"]).strftime("%Y-%m-%d-%H-%M") + ".json"
+        info["filename"] = self.savefolder + self.rawdata + datetime.datetime.fromtimestamp(info["timestampofsearch"]).strftime("%Y-%m-%d-%H-%M") + "-TemperaturaClarin.json"
         
         home = self.Home()
         
