@@ -108,3 +108,4 @@ venv.bak/
 # Cosas varias
 *.raw
 raw/
+data*/
