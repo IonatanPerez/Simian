@@ -6,13 +6,11 @@ isabstract = "Implementar"
 
 class Abstract:
    
-    """
-    def initnoabstract (self):
-        return isabstract
-    """
-    
-    def __init__ (self):
+    def __init__ (self,*args):
+        print ("Me iniciaste")
+        print (*args)
         self.chequeosdeimplementacion()
+        self.runoninit(*args)
         
     def chequeosdeimplementacion(self):
         metodos = [method for method in dir(self) if callable(getattr(self, method))]
@@ -27,3 +25,6 @@ class Abstract:
         if propiedades:
             for propiedad in propiedades:
                 if getattr(self, propiedad) == isabstract: print ("Warning: En " +type(self).__name__+" no se implemento la propiedad " + propiedad)
+                    
+    def runoninit(self,*args):
+        print (*args)
