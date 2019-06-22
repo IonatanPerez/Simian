@@ -7,6 +7,7 @@ isabstract = "Implementar"
 class Abstract:
    
     def __init__ (self,*args):
+        print (self)
         self.chequeosdeimplementacion(*args)
         self.runoninit(*args)
         
