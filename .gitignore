@@ -109,3 +109,6 @@ venv.bak/
 *.raw
 raw/
 data*/
+
+# Cosas del visual
+.vscode
