@@ -3,6 +3,17 @@
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import selenium
+import json
+import os
+
+
+# settings
+localfolder = "./Selenium/raw/"
+authorsFile = localfolder + "authors.json"
+scrappingFile = localfolder + "scrappingLog.json"
+noAutoresLimite = 10 # Asumimos que cuando hay 10 ids consecutivos sin info es que se acabo la lista de autores. 
+
+
 
 # Pensamos en la estructura de la info
 
@@ -22,53 +33,88 @@ import selenium
     # Notas (LST) -- Listado de notas, aca hay que ver todavia que estructura van a tener la info de las notas, por ahora van las URL
 
 
-# Configuramos el navegador
-ffprofile = webdriver.FirefoxProfile()
-driver = webdriver.Firefox()
 
-# Generamos la url
 # La nacion usa un codigo interno que ignora el nombre del autor, lo que le importa es el ultimo numero
 # una pagina de la forma https://www.lanacion.com.ar/autor/test-id va a recuperar todas las notas del autor numero id
 # Haciendo una revision rapida, al 26/10/19 tienen hasta el id 13170, al parecer de corrido pero no esta chequeado.
 
-id = 1
-moreAutores = True
-infoAutores = []
 
-while moreAutores:
-    infoAutor = {}
-    url = "https://www.lanacion.com.ar/autor/id-"+str(id)
-    driver.get(url)
-    assert "Autor" in driver.title
-    # Extraemos el nombre del autor
-    infoAutor["Nombre"] = driver.title.split("-")[1][1:][:-1]
-    infoAutor["Id"] = id
-    infoAutor["Url"] = url
+# Inicializamos ciertas variables 
+noAutoresAcumulados = 0 # Numero de ids sin info consecutiva
 
-    
-    # Buscamos la info de la bio
-    bio = driver.find_element_by_class_name("wiki")
-    infoAutor["Medio"] = bio.find_element_by_tag_name ("h2").get_attribute('innerHTML')
-    infoAutor["FotoUrl"] = driver.find_element_by_class_name("foto").find_element_by_xpath("/img").get_attribute('innerHTML')
-    print (vars(bio))
-    medio = bio.find_element_by_tag_name ("h2")
-    print (medio.get_attribute('innerHTML'))
-    print (medio.get_attribute('outerHTML'))
+# Iniciamos las variables relacionadas al scrapping porque es comun que se corte y queremos poder retomar.
+if os.path.exists(scrappingFile):
+    with open(scrappingFile) as json_file:
+        infoScrapping = json.load(json_file)
+else:
+    infoScrapping = {}
+    infoScrapping["nextId"] = 1
+id = infoScrapping["nextId"]
+# Cargamos la info ya guardada de autores
+if os.path.exists(authorsFile):
+    with open(authorsFile) as json_file:
+        infoAutores = json.load(json_file)
+else:
+    infoAutores = []
 
-    elem = driver.find_element_by_partial_link_text('VER MÁS NOTAS')
-    more = True
-    while more:
-        try:
-            elem.click()
-        except Exception as ex:
-            more = False
-            if type(ex).__name__ == "ElementNotInteractableException":
-                print ("Scrolling finalizado bien")
-            else:
-                raise
-    input("Press Enter to continue...")
-    infoAutores.append(infoAutor)
-    moreAutores = False
+# Entramos al loop principal donde interactua con la web. Como suele haber problemas debido
+# al caracter dinamico de la pagina, si se corta graba el avance.
+try:
+    driver = webdriver.Firefox()
+    while noAutoresAcumulados < noAutoresLimite:
+        infoAutor = {}
+        url = "https://www.lanacion.com.ar/autor/id-"+str(id)
+        driver.get(url)
+        assert "Autor" in driver.title
+        if driver.title != "Autor - - LA NACION":
+            noAutoresAcumulados = 0
+        else:
+            noAutoresAcumulados =+ 1
+            id = id +1 
+            continue
+        # Extraemos el nombre del autor
+        infoAutor["Nombre"] = driver.title.split("-")[1][1:][:-1]
+        infoAutor["Id"] = id
+        infoAutor["Url"] = url
 
-driver.close()
-print(infoAutores)            
+        
+        # Buscamos la info de la bio
+        bio = driver.find_element_by_class_name("wiki")
+        infoAutor["Medio"] = bio.find_element_by_tag_name ("h2").get_attribute('innerHTML')
+        if driver.find_element_by_class_name("foto").find_elements_by_tag_name('img'):
+            infoAutor["FotoUrl"] = driver.find_element_by_class_name("foto").find_element_by_tag_name('img').get_attribute('src')
+            infoAutor["FotoId"] = infoAutor["FotoUrl"].split("/")[-1].split("h")[0]
+        else:
+            infoAutor["FotoUrl"] = None
+            infoAutor["FotoId"] = None
+        if bio.find_elements_by_class_name ("expandible"):
+            infoAutor["Bio"] = bio.find_element_by_class_name ("expandible").get_attribute('innerHTML')
+        else:
+            infoAutor["Bio"] = None
+
+        # Nos fijamos si se pueden escrollear mas notas.
+        if driver.find_elements_by_partial_link_text('VER MÁS NOTAS'):
+            elem = driver.find_element_by_partial_link_text('VER MÁS NOTAS')
+            more = True
+            while more:
+                try:
+                    elem.click()
+                except Exception as ex:
+                    if type(ex).__name__ == "ElementNotInteractableException":
+                        more = False
+                    else:
+                        raise
+            print (infoAutor)
+        infoAutores.append(infoAutor)
+        infoScrapping["nextId"] = id + 1
+        id = id + 1                  
+        with open(scrappingFile, 'w') as fp:
+            json.dump(infoScrapping, fp)     
+    with open(authorsFile, 'w') as fp:
+        json.dump(infoAutores, fp)     
+except:
+    with open(authorsFile, 'w') as fp:
+        json.dump(infoAutores, fp)     
+    with open(scrappingFile, 'w') as fp:
+        json.dump(infoScrapping, fp)     
+    raise
