@@ -51,8 +51,7 @@ else:
 id = infoScrapping["nextId"]
 
 # Actualizamos el nombre del archivo de autores
-authorsFile = localfolder + "authors" + str((id//10)*10) + ".json"
- 
+authorsFile = localfolder + "authors_" + str((id//10)*10) + ".json"
 
 # Cargamos la info ya guardada de autores
 if os.path.exists(authorsFile):
@@ -61,6 +60,7 @@ if os.path.exists(authorsFile):
 else:
     infoAutores = []
 
+print (authorsFile)
 # Entramos al loop principal donde interactua con la web. Como suele haber problemas debido
 # al caracter dinamico de la pagina, si se corta graba el avance.
 try:
@@ -186,7 +186,10 @@ try:
         
     print ("ejecucion terminada con exito")
     with open(authorsFile, 'w') as fp:
-        json.dump(infoAutores, fp)     
+        json.dump(infoAutores, fp) 
+    with open(scrappingFile, 'w') as fp:
+        json.dump(infoScrapping, fp)     
+        
 except:
     print ("Final inesperado")
     with open(authorsFile, 'w') as fp:
