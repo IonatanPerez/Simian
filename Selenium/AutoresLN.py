@@ -2,17 +2,18 @@
 # en la carpeta del path, que en windows es user/appdata/windows/windowsapp o algo asi.
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import WebDriverWait
 import selenium
 import json
 import os
-
+import time
 
 # settings
 localfolder = "./Selenium/raw/"
 scrappingFile = localfolder + "scrappingLog.json"
 nroAutoresLimite = 10 # Asumimos que cuando hay 10 ids consecutivos sin info es que se acabo la lista de autores. 
 batchSize = 10 # Cuando se junto la info de 10 autores se vuelca a disco en un archivo aparte.
-
+batchLN = 30 # Este es el numero de notas que carga por vez LN al cargar mas notas
 
 # Pensamos en la estructura de la info
 
@@ -31,8 +32,8 @@ batchSize = 10 # Cuando se junto la info de 10 autores se vuelca a disco en un a
     #                 con un formato que es el siguiente https://bucket[1,2,3].glanacion.com/anexos/fotos/[id[-2:]]/[id]h[altoenpixeles].jpg
     # Notas (LST) -- Listado de notas, aca hay que ver todavia que estructura van a tener la info de las notas, por ahora van las URL
     # NotasEncontradas (INT) -- Cantidad de notas encontradas
-
-
+    # ScrollingCorrecto (BOOL) -- Indica si se presume que termino de scrollear bien al buscar mas noticias.
+ 
 # La nacion usa un codigo interno que ignora el nombre del autor, lo que le importa es el ultimo numero
 # una pagina de la forma https://www.lanacion.com.ar/autor/test-id va a recuperar todas las notas del autor numero id
 # Haciendo una revision rapida, al 26/10/19 tienen hasta el id 13170, al parecer de corrido pero no esta chequeado.
@@ -40,6 +41,8 @@ batchSize = 10 # Cuando se junto la info de 10 autores se vuelca a disco en un a
 
 # Inicializamos ciertas variables 
 nroAutoresAcumulados = 0 # Numero de ids sin info consecutiva
+NotasEncontradasPreviamente = 0 # Esto sirve para verificar si se encontro un numero de notas razonable o si se corto el scrolling
+intentosDeBusqueda = 0 # Esta relacionado a los intentos de busqueda en caso de que parezca que no cargo bien la pagina 
 
 # Iniciamos las variables relacionadas al scrapping porque es comun que se corte y queremos poder retomar.
 if os.path.exists(scrappingFile):
@@ -60,7 +63,6 @@ if os.path.exists(authorsFile):
 else:
     infoAutores = []
 
-print (authorsFile)
 # Entramos al loop principal donde interactua con la web. Como suele haber problemas debido
 # al caracter dinamico de la pagina, si se corta graba el avance.
 try:
@@ -103,7 +105,7 @@ try:
             while more:
                 try:
                     elem.click()
-                    numeroDeScrolls = 0
+                    time.sleep(1)
                 except Exception as ex:
                     if type(ex).__name__ == "ElementNotInteractableException":
                         more = False
@@ -125,6 +127,30 @@ try:
         # Buscamos el cuerpo de notas
         listado = driver.find_element_by_class_name("listado")
         notas = listado.find_elements_by_class_name("nota")
+        
+        # Lo que hacemos aca es chequear si el numero de notas encontradas es un multiplo
+        # de la cantidad de notas que se cargan por batch. En ese caso sospechamos que 
+        # se corto la comuniacion o algo asi (para evitar eso mas arriba se espera a que cargue pero 
+        # igual a veces puede fallar). Como puede pasar que justo haya un numero de notas multiplo
+        # del batch lo que hacemos es repetir la busqueda a ver si coincide, en ese caso lo damos por
+        # valido. 
+
+        if len(notas)%batchLN == 0:
+            if len(notas) == NotasEncontradasPreviamente:
+                infoAutor["ScrollingCorrecto"] = True
+                intentosDeBusqueda = 0
+                NotasEncontradasPreviamente = 0
+            else:
+                NotasEncontradasPreviamente = len(notas)
+                infoAutor["ScrollingCorrecto"] = False
+                intentosDeBusqueda = intentosDeBusqueda + 1
+                if intentosDeBusqueda < 10:
+                    print ("Warning! No se logro cargar bien los datos del autor: " + infoAutor["Nombre"] + " id: "+str(infoAutor["Id"]) + " intento nro: " + str(intentosDeBusqueda))
+                    continue
+                else:
+                    intentosDeBusqueda = 0
+                    NotasEncontradasPreviamente = 0
+                    
 
         
         # Estrucrtura de la info que queremos recolectar:
@@ -167,12 +193,11 @@ try:
                 InfoNota["Fecha"] = None
             infoAutor["InfoNotas"].append(InfoNota)
 
-        print (infoAutor)
         infoAutores.append(infoAutor)
 
 
         # Si acumulamos 10 autores hacemos el volcado a disco y limpiamos la lista
-        if id//batchSize == 0:
+        if id%batchSize == 0:
             print ("Volcando a disco el archivo" + authorsFile)
             with open(authorsFile, 'w') as fp:
                 json.dump(infoAutores, fp)
