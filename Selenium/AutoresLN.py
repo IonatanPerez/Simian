@@ -7,6 +7,7 @@ import selenium
 import json
 import os
 import time
+from tqdm import tqdm
 
 # settings
 localfolder = "./Selenium/raw/"
@@ -51,10 +52,11 @@ if os.path.exists(scrappingFile):
 else:
     infoScrapping = {}
     infoScrapping["nextId"] = 1
+    infoScrapping["messagelog"] = []
 id = infoScrapping["nextId"]
 
 # Actualizamos el nombre del archivo de autores
-authorsFile = localfolder + "authors_" + str((id//10)*10) + ".json"
+authorsFile = localfolder + "authors" + str((id//10)*10) + ".json"
 
 # Cargamos la info ya guardada de autores
 if os.path.exists(authorsFile):
@@ -145,12 +147,15 @@ try:
                 infoAutor["ScrollingCorrecto"] = False
                 intentosDeBusqueda = intentosDeBusqueda + 1
                 if intentosDeBusqueda < 10:
+                    infoScrapping["messagelog"].append("Warning! No se logro cargar bien los datos del autor: " + infoAutor["Nombre"] + " id: "+str(infoAutor["Id"]) + " intento nro: " + str(intentosDeBusqueda))
                     print ("Warning! No se logro cargar bien los datos del autor: " + infoAutor["Nombre"] + " id: "+str(infoAutor["Id"]) + " intento nro: " + str(intentosDeBusqueda))
                     continue
                 else:
                     intentosDeBusqueda = 0
                     NotasEncontradasPreviamente = 0
-                    
+        else:
+            intentosDeBusqueda = 1      
+            NotasEncontradasPreviamente = 0
 
         
         # Estrucrtura de la info que queremos recolectar:
@@ -168,12 +173,17 @@ try:
 
         infoAutor["InfoNotas"] = []
         infoAutor["NotasEncontradas"] = len(notas)
-        for nota in notas:
+        print ("Procesando: " + infoAutor["Nombre"] + "(" + str(infoAutor["Id"]) + ")" + ", notas a procesar: " + str(len(notas)))
+        for nota in tqdm(notas):
             InfoNota = {}  
             InfoNota["IdAutor"] = id
             InfoNota["Link"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
-            assert InfoNota["Link"].split("-")[-1][:3] == "nid" # Chequeamos que este leyendo el id de la nota
-            InfoNota["Id"] = InfoNota["Link"].split("-")[-1][3:]
+            if InfoNota["Link"] == "https://www.lanacion.com.ar/null":
+                infoScrapping["messagelog"].append("link inexistente: " + "Autor: " + str(id) + "nota: " + nota.get_attribute("innerHTML"))
+                InfoNota["Id"] = None
+            else:
+                assert InfoNota["Link"].split("-")[-1][:3] == "nid", nota.get_attribute("innerHTML") # Chequeamos que este leyendo el id de la nota
+                InfoNota["Id"] = InfoNota["Link"].split("-")[-1][3:]
             InfoNota["Seccion"] = "/".join(InfoNota["Link"].split("/")[3:][:-1])
             if nota.find_elements_by_tag_name("h3"):
                 InfoNota["Tema"] = nota.find_element_by_tag_name("h3").text
