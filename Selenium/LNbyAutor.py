@@ -28,17 +28,23 @@ with Scrapping.Scrapping() as scrp:
             autor.setValue("Url",url)
 
             # Buscamos la info de la bio
-            bio = driver.find_element_by_class_name("wiki")
-            autor.setValue("Medio",bio.find_element_by_tag_name ("h2").get_attribute('innerHTML'))
-            if driver.find_element_by_class_name("foto").find_elements_by_tag_name('img'):
-                autor.setValue("FotoUrl",driver.find_element_by_class_name("foto").find_element_by_tag_name('img').get_attribute('src'))
-                autor.setValue("FotoId",autor.getValue("FotoUrl").split("/")[-1].split("h")[0])
+            if driver.find_elements_by_class_name("wiki"):
+                bio = driver.find_element_by_class_name("wiki")
+                autor.setValue("Medio",bio.find_element_by_tag_name ("h2").get_attribute('innerHTML'))
+                if driver.find_element_by_class_name("foto").find_elements_by_tag_name('img'):
+                    autor.setValue("FotoUrl",driver.find_element_by_class_name("foto").find_element_by_tag_name('img').get_attribute('src'))
+                    autor.setValue("FotoId",autor.getValue("FotoUrl").split("/")[-1].split("h")[0])
+                else:
+                    autor.setValue("FotoUrl",None)
+                    autor.setValue("FotoId",None)
+                if bio.find_elements_by_class_name ("expandible"):
+                    autor.setValue("Bio",bio.find_element_by_class_name ("expandible").get_attribute('innerHTML'))
+                else:
+                    autor.setValue("Bio",None)
             else:
+                autor.setValue("Medio",None)
                 autor.setValue("FotoUrl",None)
                 autor.setValue("FotoId",None)
-            if bio.find_elements_by_class_name ("expandible"):
-                autor.setValue("Bio",bio.find_element_by_class_name ("expandible").get_attribute('innerHTML'))
-            else:
                 autor.setValue("Bio",None)
 
             # Nos fijamos si se pueden escrollear mas notas.
@@ -69,7 +75,7 @@ with Scrapping.Scrapping() as scrp:
             # del batch lo que hacemos es repetir la busqueda a ver si coincide, en ese caso lo damos por
             # valido. 
 
-            if not autor.validarNumeroDeNotas(len(notas)):
+            if not scrp.validarNumeroDeNotas(autor,len(notas)):
                 continue
             
             autor.setValue("NotasEncontradas",len(notas))

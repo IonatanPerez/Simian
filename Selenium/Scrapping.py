@@ -1,4 +1,4 @@
-from Settings import scrappingFile, nroAutoresLimiteNulos
+from Settings import scrappingFile, nroAutoresLimiteNulos, batchLN, numeroDeIntentosDeBusquedaPorAutor
 import os
 import json
 import datetime
@@ -21,9 +21,11 @@ class Scrapping():
             self.infoScrapping["messagelog"] = []
             self.infoScrapping["lastRun"] = datetime.datetime.now()
             self.log("starting new records, time: " + str(datetime.datetime.now()))   
-        self.infoScrapping["IdAutor"] = 1
+            self.infoScrapping["IdAutor"] = 1
         self.nroAutoresNulos = 0
         self.idActual = self.infoScrapping["IdAutor"]
+        self.intentosDeBusqueda = 0
+        self.notasUltimaBusqueda = 0
         
     def seguirBusqueda (self):
         if self.nroAutoresNulos < nroAutoresLimiteNulos:
@@ -56,12 +58,23 @@ class Scrapping():
         self.idActual = self.infoScrapping["IdAutor"]
 
     def autorNoEncontrado(self):
-        self.log("No se ha encontrado al autor: " + self.idActual)
+        self.log("No se ha encontrado al autor: " + str(self.idActual))
         self.nroAutoresNulos += 1
         self.nextAutor()
     
     def autorEncontrado(self):
         self.nroAutoresNulos = 0
    
-   
-    
+    def validarNumeroDeNotas(self,autor,numeroDeNotas):
+        if numeroDeNotas%batchLN == 0: # Da un numero sospechoso 
+            if not self.notasUltimaBusqueda == numeroDeNotas: # Y diferente a la busqueda anterior (la primera vez es 0 y busca de nuevo)
+                self.notasUltimaBusqueda = numeroDeNotas
+                autor.log("Parece que no se cargo bien la lista de notas, notas encontradas: " + str(numeroDeNotas))
+                autor.infoAutor["FinalizadoCorrectamente"] = False
+                self.intentosDeBusqueda += 1
+                if self.intentosDeBusqueda <= numeroDeIntentosDeBusquedaPorAutor:
+                    return False
+        else:
+            self.intentosDeBusqueda = 0
+            self.notasUltimaBusqueda = 0
+        return True

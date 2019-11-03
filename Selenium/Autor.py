@@ -1,4 +1,4 @@
-from Settings import localfolder, batchLN, numeroDeIntentosDeBusquedaPorAutor
+from Settings import localfolder
 import datetime
 import os
 import json
@@ -25,8 +25,6 @@ class Autor():
             self.infoAutor["notas"] = {} # Es un dict y buscamos por id de la nota
             self.infoAutor["notasVacias"] = 0
             self.log("starting new records, time: " + str(datetime.datetime.now()))   
-        self.notasUltimaBusqueda = 0
-        self.intentosDeBusqueda = 0
 
     def log(self,string):
         self.infoAutor["messagelog"].append(string)
@@ -57,20 +55,6 @@ class Autor():
 
     def getValue(self,nombre):
         return self.infoAutor[nombre]
-
-    def validarNumeroDeNotas(self,numeroDeNotas):
-        if numeroDeNotas%batchLN == 0: # Da un numero sospechoso 
-            if not self.notasUltimaBusqueda == numeroDeNotas: # Y diferente a la busqueda anterior (la primera vez es 0 y busca de nuevo)
-                self.notasUltimaBusqueda = numeroDeNotas
-                self.log("Parece que no se cargo bien la lista de notas, notas encontradas: " + str(numeroDeNotas))
-                self.infoAutor["FinalizadoCorrectamente"] = False
-                self.intentosDeBusqueda += 1
-                if self.intentosDeBusqueda <= numeroDeIntentosDeBusquedaPorAutor:
-                    return False
-        else:
-            self.intentosDeBusqueda = 0
-            self.notasUltimaBusqueda = 0
-        return True
 
     def agregarInfoNota(self,infoNota):
         idNota = infoNota["Id"]

@@ -45,3 +45,6 @@ Queremos recolectar la info disponible de cada autor de LN aprovechando que tien
 - ImagenId (INT) -- id de la imagen, sirve para buscarla en los servidores con un url generica
 - Fecha (STR) -- La fecha leida como un string.
 
+# Pendientes
+- Ver que no retome uno atras (revisqar como quedo id 59 y 60)
+- Ver que sepa que esta buscadio cuando vuelve a buscar el mismo id
