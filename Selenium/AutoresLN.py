@@ -5,39 +5,10 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support.ui import WebDriverWait
 import selenium
 import json
-import os
 import time
 from tqdm import tqdm
-
-# settings
-localfolder = "./Selenium/raw/"
-scrappingFile = localfolder + "scrappingLog.json"
-nroAutoresLimite = 10 # Asumimos que cuando hay 10 ids consecutivos sin info es que se acabo la lista de autores. 
-batchSize = 10 # Cuando se junto la info de 10 autores se vuelca a disco en un archivo aparte.
-batchLN = 30 # Este es el numero de notas que carga por vez LN al cargar mas notas
-
-# Pensamos en la estructura de la info
-
-# Queremos recolectar la info disponible de cada autor de LN aprovechando que tienen una pagina donde
-# estan todas sus notas indexadas. 
-
-# La estructura de datos para cada autor va a ser la siguiente:
-
-    # Nombre (STR) -- Nombre completo del autor extraido de la pagina
-    # Id (Int) -- Id interno de LN para el autor
-    # URL (STR) -- URL de la pagina que se esta analizando
-    # Medio (STR) -- Medio para el cual escribe el autor que se indica en la pagina 
-    # Bio (Long STR) -- Bio extraida de la pagina, puede ser un texto largo o puede no haberlo
-    # FotoUrl (STR) -- Url de la foto
-    # FotoId (INT) -- Id de la foto para eventualmente identificar imagenes descargadas. LN usa un servidor de fotos 
-    #                 con un formato que es el siguiente https://bucket[1,2,3].glanacion.com/anexos/fotos/[id[-2:]]/[id]h[altoenpixeles].jpg
-    # Notas (LST) -- Listado de notas, aca hay que ver todavia que estructura van a tener la info de las notas, por ahora van las URL
-    # NotasEncontradas (INT) -- Cantidad de notas encontradas
-    # ScrollingCorrecto (BOOL) -- Indica si se presume que termino de scrollear bien al buscar mas noticias.
- 
-# La nacion usa un codigo interno que ignora el nombre del autor, lo que le importa es el ultimo numero
-# una pagina de la forma https://www.lanacion.com.ar/autor/test-id va a recuperar todas las notas del autor numero id
-# Haciendo una revision rapida, al 26/10/19 tienen hasta el id 13170, al parecer de corrido pero no esta chequeado.
+import Scrapping
+import Settings
 
 
 # Inicializamos ciertas variables 
@@ -46,30 +17,14 @@ NotasEncontradasPreviamente = 0 # Esto sirve para verificar si se encontro un nu
 intentosDeBusqueda = 0 # Esta relacionado a los intentos de busqueda en caso de que parezca que no cargo bien la pagina 
 
 # Iniciamos las variables relacionadas al scrapping porque es comun que se corte y queremos poder retomar.
-if os.path.exists(scrappingFile):
-    with open(scrappingFile) as json_file:
-        infoScrapping = json.load(json_file)
-else:
-    infoScrapping = {}
-    infoScrapping["nextId"] = 1
-    infoScrapping["messagelog"] = []
-id = infoScrapping["nextId"]
-
-# Actualizamos el nombre del archivo de autores
-authorsFile = localfolder + "authors" + str((id//10)*10) + ".json"
-
-# Cargamos la info ya guardada de autores
-if os.path.exists(authorsFile):
-    with open(authorsFile) as json_file:
-        infoAutores = json.load(json_file)
-else:
-    infoAutores = []
+scrap = Scrapping.Scrapping()
 
 # Entramos al loop principal donde interactua con la web. Como suele haber problemas debido
 # al caracter dinamico de la pagina, si se corta graba el avance.
 try:
     driver = webdriver.Firefox()
-    while nroAutoresAcumulados < nroAutoresLimite:
+    while scrap.seguirBusqueda():
+        scrap
         infoAutor = {}
         url = "https://www.lanacion.com.ar/autor/id-"+str(id)
         driver.get(url)
