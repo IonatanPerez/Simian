@@ -46,5 +46,6 @@ Queremos recolectar la info disponible de cada autor de LN aprovechando que tien
 - Fecha (STR) -- La fecha leida como un string.
 
 # Pendientes
-- Ver que no retome uno atras (revisqar como quedo id 59 y 60)
-- Ver que sepa que esta buscadio cuando vuelve a buscar el mismo id
+- Ver que no retome uno atras (revisar como quedo id 59 y 60) Resuelto.
+- Ver que sepa que esta buscadio cuando vuelve a buscar el mismo id. Resuelto.
+- Hacer que si l primer id de nota ya esta en la lista ni busque los 30 primeros

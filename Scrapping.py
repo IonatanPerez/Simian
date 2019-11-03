@@ -1,4 +1,4 @@
-from Settings import scrappingFile, nroAutoresLimiteNulos, batchLN, numeroDeIntentosDeBusquedaPorAutor
+from Settings import scrappingFile, nroAutoresLimiteNulos, batchLN, numeroDeIntentosDeBusquedaPorAutor, startOnId
 import os
 import json
 import datetime
@@ -21,7 +21,7 @@ class Scrapping():
             self.infoScrapping["messagelog"] = []
             self.infoScrapping["lastRun"] = datetime.datetime.now()
             self.log("starting new records, time: " + str(datetime.datetime.now()))   
-            self.infoScrapping["IdAutor"] = 1
+        self.infoScrapping["IdAutor"] = startOnId
         self.nroAutoresNulos = 0
         self.idActual = self.infoScrapping["IdAutor"]
         self.intentosDeBusqueda = 0
