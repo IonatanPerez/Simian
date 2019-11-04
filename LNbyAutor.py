@@ -54,6 +54,8 @@ with Scrapping.Scrapping() as scrp:
             listado = driver.find_element_by_class_name("listado")
             notas = listado.find_elements_by_class_name("nota")
             url1 = notas[0].find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+            if not url1:
+                url1 = "https://www.lanacion.com.ar/null"
             if url1 != "https://www.lanacion.com.ar/null":
                 notaid1 = url1.split("-")[-1][3:]
                 if notaid1 in autor.infoAutor["notas"].keys():
@@ -63,6 +65,8 @@ with Scrapping.Scrapping() as scrp:
 
             for nota in notas:
                 url = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+                if not url:
+                    url = "https://www.lanacion.com.ar/null"
                 if url != "https://www.lanacion.com.ar/null":
                     notaid = url.split("-")[-1][3:]
                     if notaid in autor.infoAutor["notas"].keys():
@@ -110,6 +114,10 @@ with Scrapping.Scrapping() as scrp:
                     InfoNota = {}  
                     InfoNota["IdAutor"] = scrp.idActual
                     InfoNota["Link"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+                    if nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href"): # Por si no hay link en absoluto.
+                        InfoNota["Link"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+                    else:
+                        InfoNota["Link"] = "https://www.lanacion.com.ar/null"
                     if InfoNota["Link"] == "https://www.lanacion.com.ar/null":
                         autor.log("link inexistente: " + "Autor: " + str(id) + "nota: " + nota.get_attribute("innerHTML"))
                         InfoNota["Id"] = None

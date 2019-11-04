@@ -21,7 +21,8 @@ class Scrapping():
             self.infoScrapping["messagelog"] = []
             self.infoScrapping["lastRun"] = datetime.datetime.now()
             self.log("starting new records, time: " + str(datetime.datetime.now()))   
-        self.infoScrapping["IdAutor"] = startOnId
+        if startOnId:
+            self.infoScrapping["IdAutor"] = startOnId
         self.nroAutoresNulos = 0
         self.idActual = self.infoScrapping["IdAutor"]
         self.intentosDeBusqueda = 0

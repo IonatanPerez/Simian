@@ -5,4 +5,4 @@ batchLN = 30 # Este es el numero de notas que carga por vez LN al cargar mas not
 numeroDeIntentosDeBusquedaPorAutor = 5 # Cantidad de veces que se trata de buscar las notas para un mismo autor
 timewait = 1 # tiempo en segundos que espera antes de buscar mas notas para darle tiempo a la pagina que cargue
 tempAutorFolder = "./raw/autorestmp/"
-startOnId = 1
+startOnId = 0
