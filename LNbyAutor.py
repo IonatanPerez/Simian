@@ -50,7 +50,7 @@ with Scrapping.Scrapping() as scrp:
             # Antes de escrollear mas notas nos fijamos si vale la pena (si la id de la nota ya esta). 
             # Buscamos el cuerpo de notas
             MoreScrolling = True
-            NewNotas = False
+            NewNotas = True
             listado = driver.find_element_by_class_name("listado")
             notas = listado.find_elements_by_class_name("nota")
             url1 = notas[0].find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
@@ -98,10 +98,10 @@ with Scrapping.Scrapping() as scrp:
             # del batch lo que hacemos es repetir la busqueda a ver si coincide, en ese caso lo damos por
             # valido. 
 
-            if MoreScrolling: # Para no sobreescribir en caso de que ya haya notas previas.
+            if MoreScrolling: 
                 if not scrp.validarNumeroDeNotas(autor,len(notas)):
                     continue
-                autor.setValue("NotasEncontradas",len(notas))
+                autor.setValue("NotasEncontradas",len(notas)) # Para no sobreescribir en caso de que ya haya notas previas.
                 
             
 
