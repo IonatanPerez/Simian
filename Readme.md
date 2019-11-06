@@ -50,3 +50,5 @@ Queremos recolectar la info disponible de cada autor de LN aprovechando que tien
 - Ver que sepa que esta buscadio cuando vuelve a buscar el mismo id. Resuelto.
 - Hacer que si l primer id de nota ya esta en la lista ni busque los 30 primeros. Resuelto
 - Por alguna razon el navegador se cuelga en el autor Id 196. Revisar que pasa. Lo salteo
+- Hacer que cuando crea la entrada de cada nota en el autor, el id ademas de usarlo como key lo guarde dentro.
+- Cuando se corta por algo y graba parcial, despues cuando retoma ve que ya esta cargada la info y no sigue :(  Resuelto

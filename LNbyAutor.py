@@ -72,6 +72,9 @@ with Scrapping.Scrapping() as scrp:
                     if notaid in autor.infoAutor["notas"].keys():
                         MoreScrolling = False
                         break 
+            if scrp.recuperando:
+                MoreScrolling = True
+                NewNotas = True
 
             # Nos fijamos si se pueden escrollear mas notas.
             if MoreScrolling:
@@ -143,5 +146,6 @@ with Scrapping.Scrapping() as scrp:
                         InfoNota["Fecha"] = None
                     autor.agregarInfoNota(InfoNota)
 
+            scrp.recuperando = False
             
         scrp.nextAutor()

@@ -23,6 +23,8 @@ class Scrapping():
             self.log("starting new records, time: " + str(datetime.datetime.now()))   
         if startOnId:
             self.infoScrapping["IdAutor"] = startOnId
+        
+        self.recuperando = True
         self.nroAutoresNulos = 0
         self.idActual = self.infoScrapping["IdAutor"]
         self.intentosDeBusqueda = 0
