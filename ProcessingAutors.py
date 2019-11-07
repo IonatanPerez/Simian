@@ -46,7 +46,7 @@ def listadoUnicoDeNotas():
             print (autor)
         notas = autor["notas"]
         for idnota, nota in notas.items():
-            nota[idnota] = idnota
+            nota["idnota"] = idnota
             listado.append(nota)
     return listado
 
