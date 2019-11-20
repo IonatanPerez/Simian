@@ -6,3 +6,4 @@ numeroDeIntentosDeBusquedaPorAutor = 5 # Cantidad de veces que se trata de busca
 timewait = 1 # tiempo en segundos que espera antes de buscar mas notas para darle tiempo a la pagina que cargue
 processingFolder = "./raw/data/autores/"
 startOnId = 0
+intentosTimeout = 2 # Numero de veces que trata de cargar un id si la carga se prolonga hasta un timeout antes de pasar al siguiente

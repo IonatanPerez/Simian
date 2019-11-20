@@ -14,7 +14,14 @@ with Scrapping.Scrapping() as scrp:
     while scrp.seguirBusqueda():
         with Autor.Autor(scrp.idActual) as autor:
             url = "https://www.lanacion.com.ar/autor/id-"+str(scrp.idActual)
-            driver.get(url)
+            try:
+                driver.get(url)
+            except Exception:
+                if scrp.procesarTimeout():
+                    continue
+                else:
+                    break
+
             assert "Autor" in driver.title
             if driver.title == "Autor - - LA NACION":
                 scrp.autorNoEncontrado()
@@ -116,14 +123,15 @@ with Scrapping.Scrapping() as scrp:
                 for nota in tqdm(notas):
                     InfoNota = {}  
                     InfoNota["IdAutor"] = scrp.idActual
-                    InfoNota["Link"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
                     if nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href"): # Por si no hay link en absoluto.
                         InfoNota["Link"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").get_attribute("href")
+                        InfoNota["Titulo"] = nota.find_element_by_tag_name("h2").find_element_by_tag_name("a").text
                     else:
                         InfoNota["Link"] = "https://www.lanacion.com.ar/null"
                     if InfoNota["Link"] == "https://www.lanacion.com.ar/null":
                         autor.log("link inexistente: " + "Autor: " + str(id) + "nota: " + nota.get_attribute("innerHTML"))
                         InfoNota["Id"] = None
+                        InfoNota["Titulo"] = None
                     else:
                         assert InfoNota["Link"].split("-")[-1][:3] == "nid", nota.get_attribute("innerHTML") # Chequeamos que este leyendo el id de la nota
                         InfoNota["Id"] = InfoNota["Link"].split("-")[-1][3:]
@@ -144,6 +152,7 @@ with Scrapping.Scrapping() as scrp:
                         InfoNota["Fecha"] = nota.find_element_by_class_name("fecha").text
                     else:
                         InfoNota["Fecha"] = None
+                    
                     autor.agregarInfoNota(InfoNota)
 
             scrp.recuperando = False

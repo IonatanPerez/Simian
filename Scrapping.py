@@ -1,4 +1,4 @@
-from Settings import scrappingFile, nroAutoresLimiteNulos, batchLN, numeroDeIntentosDeBusquedaPorAutor, startOnId
+from Settings import scrappingFile, nroAutoresLimiteNulos, batchLN, numeroDeIntentosDeBusquedaPorAutor, startOnId, intentosTimeout
 import os
 import json
 import datetime
@@ -29,6 +29,8 @@ class Scrapping():
         self.idActual = self.infoScrapping["IdAutor"]
         self.intentosDeBusqueda = 0
         self.notasUltimaBusqueda = 0
+        self.timeoutIntentos = 0
+        self.timeoutLastId = 0
         
     def seguirBusqueda (self):
         if self.nroAutoresNulos < nroAutoresLimiteNulos:
@@ -36,8 +38,10 @@ class Scrapping():
         else:
             return False
 
-    def log(self,string):
+    def log(self,string,imprimir=False):
         self.infoScrapping["messagelog"].append(string)
+        if imprimir:
+            print (string)
 
     def __enter__(self):
         return self
@@ -81,3 +85,16 @@ class Scrapping():
             self.intentosDeBusqueda = 0
             self.notasUltimaBusqueda = 0
         return True
+
+    def procesarTimeout(self):
+        self.log("Error cargando la pagina " + str(self.idActual), imprimir=True)
+        if self.timeoutLastId != self.idActual:
+            self.timeoutLastId = self.idActual
+            self.timeoutIntentos = 0
+        self.timeoutIntentos += 1
+        if self.timeoutIntentos > intentosTimeout:
+            self.log("Despues de " + str(intentosTimeout) + " intentos de cargar la informacion del " \
+                "id " + str(self.idActual) + " se asume que no hay conexion",imprimir=True)
+            return False
+        return True
+
